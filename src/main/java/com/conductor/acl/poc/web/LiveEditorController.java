@@ -1,10 +1,8 @@
 package com.conductor.acl.poc.web;
 
-import com.conductor.acl.poc.persistence.dao.NoticeMessageRepository;
-import com.conductor.acl.poc.persistence.entity.NoticeMessage;
+import com.conductor.acl.poc.persistence.dao.ChangesRepository;
+import com.conductor.acl.poc.persistence.entity.LiveEditorChange;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.annotation.Secured;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -14,10 +12,11 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-public class HelloController {
+public class LiveEditorController {
 
     @Autowired
-    NoticeMessageRepository messageRepository;
+    ChangesRepository messageRepository;
+
 
     @RequestMapping(value = "/", produces = "application/json")
     @ResponseBody
@@ -25,16 +24,23 @@ public class HelloController {
         return "Hello World!";
     }
 
-    @RequestMapping(value = "/messages", produces = "application/json")
+
+    @RequestMapping(value = "/changes", produces = "application/json")
     @ResponseBody
-    List<NoticeMessage> messages() {
+    List<LiveEditorChange> changes() {
         return messageRepository.findAll();
     }
 
-    @RequestMapping(value = "/messages", produces = "application/json",
+
+    @RequestMapping(value = "/changes", produces = "application/json",
             method = RequestMethod.POST)
     @ResponseBody
-    NoticeMessage createMessage(@RequestBody NoticeMessage message) {
-        return messageRepository.save(message);
+    LiveEditorChange createMessage(@RequestBody LiveEditorChange change) {
+        if(messageRepository.findAll().contains(change)){
+            return messageRepository.save(change);
+        } else {
+            return messageRepository.create(change);
+        }
+
     }
 }

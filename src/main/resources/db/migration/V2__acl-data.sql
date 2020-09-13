@@ -23,23 +23,25 @@
 # ACE_ORDER: the order of current entry in the ACL entries list of corresponding Object Identity
 # SID: the target SID which the permission is granted to or denied from, links to ACL_SID table
 # MASK: the integer bit mask that represents the actual permission being granted or denied
+# Each of these bits represents a permission, and by default the permissions are read (bit 0), write (bit 1), create (bit 2), delete (bit 3) and administer (bit 4).
 # GRANTING: value 1 means granting, value 0 means denying
 # AUDIT_SUCCESS and AUDIT_FAILURE: for auditing purpose
 
 INSERT INTO acl_sid (id, principal, sid) VALUES
-(1, 1, 'manager'),
-(2, 1, 'hr'),
-(3, 0, 'ROLE_EDITOR'),
+(1, 0, 'ROLE_CONDUCTOR'),
+(2, 0, 'ROLE_PUBLISHER'),
 (3, 0, 'ROLE_ADMIN'),
-(4, 1, 'roman');
+(4, 1, 'roman'),
+(5, 1, 'ivan');
+
 
 INSERT INTO acl_class (id, class) VALUES
-(1, 'com.conductor.acl.poc.persistence.entity.NoticeMessage');
+(1, 'com.conductor.acl.poc.persistence.entity.LiveEditorChange');
 
-INSERT INTO system_message(id,content) VALUES 
-(1,'First Level Message'),
-(2,'Second Level Message'),
-(3,'Third Level Message');
+INSERT INTO editor_change(id ,domain, change_content) VALUES
+(1,'example.com','some changes'),
+(2,'apple.com', 'other changes'),
+(3,'conductor.com', 'little changes');
 
 INSERT INTO acl_object_identity (id, object_id_class, object_id_identity, parent_object, owner_sid, entries_inheriting) VALUES
 (1, 1, 1, NULL, 3, 0),
