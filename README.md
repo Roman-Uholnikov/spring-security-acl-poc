@@ -20,7 +20,7 @@ First assumption is that Authorization and authentication of the end user will h
  Live Editor will process only requests with valid signed JWT token
  Valid signed JWT token will be created only with valid JWT secret
  Only production system (monolith) should have access to valid JWT secret for prod env
- This solution support role separation + domain controlling: user may be PUBLISHER but he/she may publish only to its own domains
+ This solution support role separation + domain controlling: user may be PUBLISHER but he/she may publish only to its configured domains
  
  ## Demo role configs
   POC configured with 3 users:   
@@ -44,16 +44,19 @@ USER3=$(curl -X POST "http://localhost:8081/authenticate" -d '{"user":3}' -H "Co
  - using previously generated JWT token, check thet each user has different visibility (according to ACL configuration) 
  for the Domain Changes
  
+ #### User 3
  User `3` can see changes for domains `conductor.com` and `apple.com` and `example.com`
   ```bash
  curl -X GET "http://localhost:8081/changes" -H "Authorization:$USER3"
  ```
 
+#### User 2
  User `2` can see changes only for domains `conductor.com`
  ```bash
 curl -X GET "http://localhost:8081/changes" -H "Authorization:$USER2"
 ```
 
+#### User 1
  User `1` can see changes for domains `conductor.com` and `apple.com`
  ```bash
 curl -X GET "http://localhost:8081/changes" -H "Authorization:$USER1"
