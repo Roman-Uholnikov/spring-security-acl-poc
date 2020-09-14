@@ -2,7 +2,11 @@ package com.conductor.acl.poc.persistence.entity;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 @Entity
@@ -16,8 +20,9 @@ public class LiveEditorChange {
     @Column(name = "change_content")
     private String changeContent;
 
-    @Column
-    private String domain;
+    @ManyToOne(fetch = FetchType.EAGER)
+//    @JoinColumn(name = "web_property_id")
+    private WebProperty webProperty;
 
     public Integer getId() {
         return id;
@@ -37,12 +42,12 @@ public class LiveEditorChange {
         return this;
     }
 
-    public String getDomain() {
-        return domain;
+    public WebProperty getWebProperty() {
+        return webProperty;
     }
 
-    public LiveEditorChange setDomain(String domain) {
-        this.domain = domain;
+    public LiveEditorChange setWebProperty(WebProperty webProperty) {
+        this.webProperty = webProperty;
         return this;
     }
 }

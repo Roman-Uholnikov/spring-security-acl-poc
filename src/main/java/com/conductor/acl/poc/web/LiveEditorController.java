@@ -1,6 +1,6 @@
 package com.conductor.acl.poc.web;
 
-import com.conductor.acl.poc.persistence.dao.ChangesRepository;
+import com.conductor.acl.poc.persistence.dao.LiveEditorChangeRepository;
 import com.conductor.acl.poc.persistence.entity.LiveEditorChange;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -15,7 +15,7 @@ import java.util.List;
 public class LiveEditorController {
 
     @Autowired
-    ChangesRepository messageRepository;
+    LiveEditorChangeRepository messageRepository;
 
 
     @RequestMapping(value = "/", produces = "application/json")
@@ -31,16 +31,12 @@ public class LiveEditorController {
         return messageRepository.findAll();
     }
 
-
     @RequestMapping(value = "/changes", produces = "application/json",
             method = RequestMethod.POST)
     @ResponseBody
     LiveEditorChange createMessage(@RequestBody LiveEditorChange change) {
-        if(messageRepository.findAll().contains(change)){
-            return messageRepository.save(change);
-        } else {
-            return messageRepository.create(change);
-        }
-
+        LiveEditorChange change1 = messageRepository.save(change);
+        // TODO ruholnikov: 14.09.2020 save to acl object identity
+        return change1;
     }
 }

@@ -1,10 +1,20 @@
 create table IF NOT EXISTS editor_change
 (
-    id            integer not null,
-    domain        varchar(255),
-    change_content varchar(255),
+    id              integer not null,
+    web_property_id integer(255),
+    change_content  varchar(255),
     primary key (id)
 );
+
+create table IF NOT EXISTS web_property
+(
+    id   integer not null,
+    name varchar(255),
+    primary key (id)
+);
+
+ALTER TABLE editor_change
+    ADD FOREIGN KEY (web_property_id) REFERENCES web_property (id);
 
 CREATE TABLE IF NOT EXISTS acl_sid
 (
@@ -54,6 +64,14 @@ ALTER TABLE acl_entry
 
 ALTER TABLE acl_entry
     ADD FOREIGN KEY (sid) REFERENCES acl_sid (id);
+
+create table IF NOT EXISTS user_roles
+(
+    id   integer not null,
+    user_id integer,
+    role varchar(255),
+    primary key (id)
+);
 
 --
 -- Constraints for table acl_object_identity
