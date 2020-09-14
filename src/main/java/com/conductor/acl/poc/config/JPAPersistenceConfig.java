@@ -10,7 +10,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @EnableTransactionManagement
 @EnableJpaRepositories(basePackages = "com.conductor.acl.poc.persistence.dao")
 @PropertySource("classpath:application.properties")
-@EntityScan(basePackages={ "com.conductor.acl.poc.persistence.entity" })
+@EntityScan(basePackages = {"com.conductor.acl.poc.persistence.entity"})
 public class JPAPersistenceConfig {
-    
+
 }
