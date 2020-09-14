@@ -20,15 +20,50 @@ First assumption is that Authorization and authentication of the end user will h
  Live Editor will process only requests with valid signed JWT token
  Valid signed JWT token will be created only with valid JWT secret
  Only production system (monolith) should have access to valid JWT secret for prod env
+ This solution support role separation + domain controlling: user may be PUBLISHER but he/she may publish only to its own domains
  
- ## todos
+ ## Demo role configs
+  POC configured with 3 users:   
+  `1` - has ROLE_PUBLISHER for domains `conductor.com` and `apple.com`
+  `2` - has ROLE_PUBLISHER for `apple.com` 
+  `3` - has ROLE_ADMIN for `conductor.com` and `apple.com` and `example.com`
+  
+  Application has configured domains(web property). Roles are assigned to domains. Domains has Changes. 
+  Each Change inherit permissions from the domain.
  
+ ## How to DEMO
+ - make sure you have mysql is running on your `localhost:3306`
+ - start an application `mvn spring-boot:run`
+ - after application is started get authentication token (ideally Monolith will generate it based on authenticated user)
+ authenticate 3 users (generate 3 JWT tokens:
+ ```bash
+USER1=$(curl -X POST "http://localhost:8081/authenticate" -d '{"user":1}' -H "Content-Type: application/json")
+USER2=$(curl -X POST "http://localhost:8081/authenticate" -d '{"user":2}' -H "Content-Type: application/json")
+USER3=$(curl -X POST "http://localhost:8081/authenticate" -d '{"user":3}' -H "Content-Type: application/json")
+```
+ - using previously generated JWT token, check thet each user has different visibility (according to ACL configuration) 
+ for the Domain Changes
  
- todo move jwt token creation on Monolith side
- todo create test case to validate that it works
- - get
- - update
- - create
- 
+ User `3` can see changes for domains `conductor.com` and `apple.com` and `example.com`
+  ```bash
+ curl -X GET "http://localhost:8081/changes" -H "Authorization:$USER3"
+ ```
 
- out of this POC: to which domain user can create changes   
+ User `2` can see changes only for domains `conductor.com`
+ ```bash
+curl -X GET "http://localhost:8081/changes" -H "Authorization:$USER2"
+```
+
+ User `1` can see changes for domains `conductor.com` and `apple.com`
+ ```bash
+curl -X GET "http://localhost:8081/changes" -H "Authorization:$USER1"
+```
+ and can publish new changes to one of those domains
+ ```bash
+curl -X POST "http://localhost:8081/changes" -d '{"id":33,"changeContent": "new change","webProperty": {"id": 3,"name": "conductor.com"}}' -H "Content-Type: application/json" -H "Authorization:$USER1"
+```
+ however can not publish to `example.com`
+```bash
+curl -X POST "http://localhost:8081/changes" -d '{"id": 34,"changeContent": "new change","webProperty": {"id": 1,"name": "example.com"}}' -H "Content-Type: application/json" -H "Authorization:$USER1"
+
+```
