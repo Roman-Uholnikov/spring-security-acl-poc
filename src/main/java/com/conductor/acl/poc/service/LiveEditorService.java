@@ -1,12 +1,14 @@
 package com.conductor.acl.poc.service;
 
-import com.conductor.acl.poc.persistence.dao.AclObjectIdClassRepository;
-import com.conductor.acl.poc.persistence.dao.AclObjectIdentityRepository;
 import com.conductor.acl.poc.persistence.dao.LiveEditorChangeRepository;
-import com.conductor.acl.poc.persistence.entity.AclObjectIdClass;
-import com.conductor.acl.poc.persistence.entity.AclObjectIdentity;
 import com.conductor.acl.poc.persistence.entity.LiveEditorChange;
+import com.conductor.acl.poc.persistence.entity.WebProperty;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.acls.domain.ObjectIdentityImpl;
+import org.springframework.security.acls.model.MutableAcl;
+import org.springframework.security.acls.model.MutableAclService;
+import org.springframework.security.acls.model.NotFoundException;
+import org.springframework.security.acls.model.ObjectIdentity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,28 +17,39 @@ import java.util.List;
 @Service
 @Transactional
 public class LiveEditorService {
-
+    @Autowired
+    MutableAclService aclService;
     @Autowired
     LiveEditorChangeRepository changeRepository;
-    @Autowired
-    AclObjectIdentityRepository objectIdentityRepository;
-    @Autowired
-    AclObjectIdClassRepository objectIdClassRepository;
 
-    public AclObjectIdentity createAclIdentityRecord(LiveEditorChange change){
-        List<AclObjectIdClass> byClassName = objectIdClassRepository.findByClassName(change.getClass().getCanonicalName());
-        List<AclObjectIdClass> parentClass = objectIdClassRepository.findByClassName(change.getWebProperty().getClass().getCanonicalName());
-        List<AclObjectIdentity> parentIdentity = objectIdentityRepository.findByObjectIdClassAndObjectIdIdentity(parentClass.get(0), change.getWebProperty().getId());
-        //todo proper id generation should be used
-        return objectIdentityRepository.save(new AclObjectIdentity(change.getId()+100, byClassName.get(0), change.getId(),
-                parentIdentity.get(0), 1, true));
-    }
 
     public LiveEditorChange createChange(LiveEditorChange change){
         LiveEditorChange saved = changeRepository.save(change);
-        createAclIdentityRecord(change);
+        updateAcl(change);
         return saved;
     }
+
+
+    /**
+     * Update ACL Identity for the object. Permissions are inherited from web_property
+     * @param change
+     */
+    private MutableAcl updateAcl(LiveEditorChange change) {
+        final ObjectIdentity oi = new ObjectIdentityImpl(change.getClass(), change.getId());
+
+        MutableAcl acl = null;
+        try {
+            acl = (MutableAcl) aclService.readAclById(oi);
+        } catch (final NotFoundException nfe) {
+            acl = aclService.createAcl(oi);
+        }
+        acl.setEntriesInheriting(true);
+        WebProperty parentAclObject = change.getWebProperty();
+        acl.setParent(aclService.readAclById(new ObjectIdentityImpl(parentAclObject.getClass(), parentAclObject.getId())));
+        aclService.updateAcl(acl);
+        return acl;
+    }
+
 
     public List<LiveEditorChange> findAll(){
         return changeRepository.findAll();
